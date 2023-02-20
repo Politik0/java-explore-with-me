@@ -13,24 +13,7 @@
     <name>stats-service</name>
     <description>stats-service</description>
 
-<!--    <repositories>
-        <repository>
-            <id>loal-repository</id>
-            <url>${user.home}/.m2/repository</url>
-        </repository>
-    </repositories>-->
-
     <dependencies>
-<!--        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>-->
         <dependency>
             <groupId>ru.practicum</groupId>
             <artifactId>stats-dto</artifactId>
