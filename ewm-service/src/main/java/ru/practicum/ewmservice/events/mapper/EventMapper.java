@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter;
 public class EventMapper {
     private final ModelMapper modelMapper;
     private final Converter<String, LocalDateTime> fromStringDate;
-    private final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public EventMapper() {
         modelMapper = new ModelMapper();
@@ -24,7 +24,7 @@ public class EventMapper {
             @Override
             protected LocalDateTime convert(String source) {
 
-                return LocalDateTime.parse(source, FORMAT);
+                return LocalDateTime.parse(source, format);
             }
         };
 
@@ -34,7 +34,7 @@ public class EventMapper {
     public EventShortDto convertToShortDto(Event event) {
         EventShortDto eventShortDto = modelMapper.map(event, EventShortDto.class);
         if (event.getEventDate() != null) {
-            eventShortDto.setEventDate(event.getEventDate().format(FORMAT));
+            eventShortDto.setEventDate(event.getEventDate().format(format));
         }
         return eventShortDto;
     }
@@ -42,13 +42,13 @@ public class EventMapper {
     public EventFullDto convertToFullDto(Event event) {
         EventFullDto eventFullDto = modelMapper.map(event, EventFullDto.class);
         if (event.getEventDate() != null) {
-            eventFullDto.setEventDate(event.getEventDate().format(FORMAT));
+            eventFullDto.setEventDate(event.getEventDate().format(format));
         }
         if (event.getCreatedOn() != null) {
-            eventFullDto.setCreatedOn(event.getCreatedOn().format(FORMAT));
+            eventFullDto.setCreatedOn(event.getCreatedOn().format(format));
         }
         if (event.getPublishedOn() != null) {
-            eventFullDto.setPublishedOn(event.getPublishedOn().format(FORMAT));
+            eventFullDto.setPublishedOn(event.getPublishedOn().format(format));
         }
         return eventFullDto;
     }
