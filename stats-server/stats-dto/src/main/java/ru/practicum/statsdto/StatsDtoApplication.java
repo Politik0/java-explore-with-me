@@ -3,6 +3,7 @@ package ru.practicum.statsdto;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/*
 @SpringBootApplication
 public class StatsDtoApplication {
 
@@ -11,3 +12,4 @@ public class StatsDtoApplication {
     }
 
 }
+*/
