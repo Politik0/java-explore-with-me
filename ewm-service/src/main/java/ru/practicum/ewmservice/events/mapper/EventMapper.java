@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter;
 public class EventMapper {
     private final ModelMapper modelMapper;
     private final Converter<String, LocalDateTime> fromStringDate;
-    private final static DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public EventMapper() {
         modelMapper = new ModelMapper();

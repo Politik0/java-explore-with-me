@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 public interface EventService {
-    List <EventShortDto> getAllEventsOfCurrentUser(long userId, int from, int size);
+    List<EventShortDto> getAllEventsOfCurrentUser(long userId, int from, int size);
 
     EventFullDto addNewEvent(long userId, NewEventDto newEventDto);
 

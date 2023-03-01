@@ -74,7 +74,7 @@ public class CategoryServiceImpl implements CategoryService {
                 new ObjectNotFoundException(String.format("Category with id=%d was not found", catId)));
     }
 
-    private Category saveCategory (Category category) {
+    private Category saveCategory(Category category) {
         try {
             return categoryRepository.save(category);
         } catch (RuntimeException e) {

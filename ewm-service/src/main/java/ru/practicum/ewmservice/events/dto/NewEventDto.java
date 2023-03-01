@@ -13,7 +13,7 @@ import javax.validation.constraints.Size;
 @AllArgsConstructor
 public class NewEventDto {
 
-  @Size(min=20,max=2000, message = "Длина аннотации должна быть от 20 до 2000 символов.")
+  @Size(min = 20, max = 2000, message = "Длина аннотации должна быть от 20 до 2000 символов.")
   @NotNull (message = "Поле с аннотацией не должно быть пустым.")
   @ToString.Exclude
   private String annotation;
@@ -22,7 +22,7 @@ public class NewEventDto {
   private long category;
 
   @NotNull (message = "Поле с описанием не должно быть пустым.")
-  @Size(min=20,max=7000, message = "Длина описания должна быть от 20 до 7000 символов.")
+  @Size(min = 20, max = 7000, message = "Длина описания должна быть от 20 до 7000 символов.")
   @ToString.Exclude
 
   private String description;
@@ -40,7 +40,7 @@ public class NewEventDto {
 
   private boolean requestModeration;
 
-  @Size(min=3, max=120, message = "Длина заголовка должна быть от 3 до 120 символов.")
+  @Size(min = 3, max = 120, message = "Длина заголовка должна быть от 3 до 120 символов.")
   @NotNull (message = "Поле с заголовком не должно быть пустым.")
   private String title;
 }
