@@ -25,7 +25,10 @@ import java.util.List;
 public class PrivateEventController {
     private final EventService eventService;
 
-    @GetMapping // Получение событий, добавленных текущим пользователем
+    /**
+     * Получение событий, добавленных текущим пользователем
+     */
+    @GetMapping
     public List<EventShortDto> getEvents(@PathVariable long userId, @RequestParam(defaultValue = "0") int from,
                                                       @RequestParam(defaultValue = "10") int size) {
         log.info("Getting all events by user with id={}, from={}, size={}", userId, from, size);
@@ -52,13 +55,19 @@ public class PrivateEventController {
         return eventService.updateEventOfCurrentUser(userId, eventId, eventUserRequest);
     }
 
-    @GetMapping("/{eventId}/requests") // Получение информации о запросах на участие в событии текущего пользователя
+    /**
+     * Получение информации о запросах на участие в событии текущего пользователя
+     */
+    @GetMapping("/{eventId}/requests")
     public List<ParticipationRequestDto> getEventRequests(@PathVariable long userId, @PathVariable long eventId) {
         log.info("Getting all event requests, userId={}, eventId={}", userId, eventId);
         return eventService.getEventRequests(userId, eventId);
     }
 
-    @PatchMapping("/{eventId}/requests") // Изменение статуса запроса на участие в событии текущего пользователя
+    /**
+     * Изменение статуса запроса на участие в событии текущего пользователя
+     */
+    @PatchMapping("/{eventId}/requests")
     public EventRequestStatusUpdateResult updateRequestStatus(@PathVariable long userId,
                                                               @PathVariable long eventId,
                                                               @RequestBody @Valid EventRequestStatusUpdateRequest updateRequestStatus) {
@@ -66,5 +75,4 @@ public class PrivateEventController {
                 updateRequestStatus);
         return eventService.updateRequestStatus(userId, eventId, updateRequestStatus);
     }
-
 }

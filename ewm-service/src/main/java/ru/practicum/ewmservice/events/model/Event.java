@@ -85,6 +85,7 @@ public class Event {
          } else {
              string.append("null");
          }
+
         return string.append(", location=" + location +
                 ", paid=" + paid +
                 ", participantLimit=" + participantLimit +

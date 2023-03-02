@@ -16,7 +16,10 @@ import java.util.List;
 public class AdminEventController {
     private final EventService eventService;
 
-    @GetMapping // Поиск событий администратором
+    /**
+     * Поиск событий администратором
+     */
+    @GetMapping
     public List<EventFullDto> findEvents(@RequestParam(required = false) List<Long> users,
                                          @RequestParam(required = false) List<String> states,
                                          @RequestParam(required = false) List<Long> categories,
@@ -29,7 +32,10 @@ public class AdminEventController {
         return eventService.findEventsByAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
     }
 
-    @PatchMapping("/{eventId}") // Обновление события администратором
+    /**
+     * Обновление события администратором
+     */
+    @PatchMapping("/{eventId}")
     public EventFullDto updateEventById(@PathVariable long eventId,
                                         @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
         log.info("Updating event by admin, eventId={}, eventForUpdate={}", eventId, updateEventAdminRequest);

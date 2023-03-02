@@ -24,7 +24,6 @@ public class NewEventDto {
   @NotNull (message = "Поле с описанием не должно быть пустым.")
   @Size(min = 20, max = 7000, message = "Длина описания должна быть от 20 до 7000 символов.")
   @ToString.Exclude
-
   private String description;
 
   @NotNull (message = "Поле с датой не должно быть пустым.")

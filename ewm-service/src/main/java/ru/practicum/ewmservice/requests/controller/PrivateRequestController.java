@@ -19,25 +19,31 @@ public class PrivateRequestController {
 
     private final RequestService requestService;
 
-    @GetMapping // Получение информации о заявках текущего пользователя на участие в чужих событиях
+    /**
+     * Получение информации о заявках текущего пользователя на участие в чужих событиях
+     */
+    @GetMapping
     public List<ParticipationRequestDto> getParticipationRequests(@PathVariable long userId) {
         log.info("Getting all participation requests, userId={}", userId);
         return requestService.getParticipationRequests(userId);
     }
 
+    /**
+     * Добавление заявки от текущего пользователя на участие в событии
+     */
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping // Добавление заявки от текущего пользователя на участие в событии
+    @PostMapping
     public ParticipationRequestDto addParticipationRequest(@PathVariable long userId, @RequestParam long eventId) {
         log.info("Creating new participation request, userId={}, eventId={}", userId, eventId);
         return requestService.addParticipationRequest(userId, eventId);
     }
 
-    @PatchMapping("/{requestId}/cancel") // Отмена своего запроса на участие в событии
+    /**
+     * Отмена своего запроса на участие в событии
+     */
+    @PatchMapping("/{requestId}/cancel")
     public ParticipationRequestDto cancelParticipationRequest(@PathVariable long userId, @PathVariable long requestId) {
         log.info("Canceling participation request, userId={}, requestId={}", userId, requestId);
         return requestService.cancelParticipationRequest(userId, requestId);
     }
-
-
-
 }

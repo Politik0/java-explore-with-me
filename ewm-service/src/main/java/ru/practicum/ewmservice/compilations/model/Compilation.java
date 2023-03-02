@@ -24,6 +24,7 @@ public class Compilation {
     @Column
     private boolean pinned;
 
+    @ToString.Exclude
     @ManyToMany
     @JoinTable(name = "compilations_events",
             joinColumns = @JoinColumn(name = "compilation_id"),

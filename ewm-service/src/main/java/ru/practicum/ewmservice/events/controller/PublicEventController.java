@@ -17,7 +17,10 @@ import java.util.List;
 public class PublicEventController {
     private final EventService eventService;
 
-    @GetMapping // Получение событий с возможностю фильтрации
+    /**
+     * Получение событий с возможностю фильтрации
+     */
+    @GetMapping
     public List<EventShortDto> getEvents(@RequestParam(required = false) String text,
                                          @RequestParam(required = false) List<Long> categories,
                                          @RequestParam(required = false) Boolean paid,
