@@ -13,11 +13,10 @@ import ru.practicum.ewmservice.categories.service.CategoryService;
 import ru.practicum.ewmservice.converters.StateEnumConverter;
 import ru.practicum.ewmservice.converters.StringDateConverter;
 import ru.practicum.ewmservice.events.dto.*;
+import ru.practicum.ewmservice.events.mapper.CommentMapper;
 import ru.practicum.ewmservice.events.mapper.EventMapper;
-import ru.practicum.ewmservice.events.model.Event;
-import ru.practicum.ewmservice.events.model.EventLocation;
-import ru.practicum.ewmservice.events.model.QEvent;
-import ru.practicum.ewmservice.events.model.State;
+import ru.practicum.ewmservice.events.model.*;
+import ru.practicum.ewmservice.events.repository.CommentRepository;
 import ru.practicum.ewmservice.events.repository.EventRepository;
 import ru.practicum.ewmservice.events.repository.LocationRepository;
 import ru.practicum.ewmservice.exception.InvalidRequestException;
@@ -57,9 +56,12 @@ public class EventServiceImpl implements EventService {
     private final RequestService requestService;
     private final RequestMapper requestMapper;
     private final StateEnumConverter enumConverter;
+    private final CommentMapper commentMapper;
+    private final CommentRepository commentRepository;
     private static final String URI_PREFIX = "/events";
     private static final int HOURS_TO_EVENT_DATE = 2;
     private static final int HOURS_FROM_PUBLISH_DATE_TO_EVENT_DATE = 1;
+    private static final int HOURS_TO_UPDATE_COMMENT = 24;
 
     @Override
     public EventFullDto addNewEvent(long userId, NewEventDto newEventDto) {
@@ -117,11 +119,53 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public CommentDto addComment(long userId, long eventId, InputCommentDto commentDto) {
+        Comment comment = commentMapper.convertFromDto(commentDto);
+        User user = userService.getUserById(userId);
+        Event event = getEventById(eventId);
+        comment.setAuthor(user);
+        comment.setEvent(event);
+        comment.setCreated(LocalDateTime.now());
+        Comment commentSaved = commentRepository.save(comment);
+        log.info("Comment saved in repository, comment={}", commentSaved);
+        return commentMapper.convertToDto(commentSaved);
+    }
+
+    @Override
+    public CommentDto updateComment(long userId, long eventId, long commentId, InputCommentDto commentDto) {
+        getEventById(eventId);
+        userService.getUserById(userId);
+        Comment comment = findCommentById(commentId);
+        if (comment.getCreated().plusHours(HOURS_TO_UPDATE_COMMENT).isBefore(LocalDateTime.now())) {
+            throw new InvalidRequestException("Comment can be changed only within 24 hours.");
+        }
+        comment.setText(commentDto.getText());
+        Comment commentUpdated = commentRepository.save(comment);
+        log.info("Comment updated, commentUpdated={}", commentUpdated);
+        return commentMapper.convertToDto(commentUpdated);
+    }
+
+    @Override
+    public Comment findCommentById(long commentId) {
+        return commentRepository.findById(commentId).orElseThrow(() ->
+                new ObjectNotFoundException(String.format("Comment with id=%d was not found", commentId)));
+    }
+
+    @Override
+    public void deleteComment(long userId, long eventId, long commentId) {
+        getEventById(eventId);
+        userService.getUserById(userId);
+        findCommentById(commentId);
+        commentRepository.deleteById(commentId);
+        log.info("Comment with id={} deleted", commentId);
+    }
+
+    @Override
     public List<EventShortDto> getAllEventsOfCurrentUser(long userId, int from, int size) {
         userService.getUserById(userId);
         List<Event> events = eventRepository.findAllByInitiatorId(userId, PageRequest.of(from / size, size)).stream()
                 .collect(Collectors.toList());
-        List<EventFullDto> eventFullDtos = setReviewsAndConfirmedRequests(events, null, null);
+        List<EventFullDto> eventFullDtos = setEventInfo(events, null, null);
         List<EventShortDto> eventShortDtos = eventFullDtos.stream()
                 .map(eventMapper::convertFromFullToShortDto)
                 .collect(Collectors.toList());
@@ -141,7 +185,7 @@ public class EventServiceImpl implements EventService {
                 null);
         Pageable pageable = PageRequest.of(from / size, size, Sort.by("eventDate").descending());
         List<Event> events = eventRepository.findAll(builder, pageable).stream().collect(Collectors.toList());
-        List<EventFullDto> eventFullDtos = setReviewsAndConfirmedRequests(events, rangeStart, rangeEnd);
+        List<EventFullDto> eventFullDtos = setEventInfo(events, rangeStart, rangeEnd);
         if (sort.equals("VIEWS")) {
             eventFullDtos.sort(Comparator.comparing(EventFullDto::getViews));
         }
@@ -154,7 +198,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventShortDto> getEventShortDtos(List<Event> events) {
-        List<EventFullDto> eventFullDtos = setReviewsAndConfirmedRequests(events, null, null);
+        List<EventFullDto> eventFullDtos = setEventInfo(events, null, null);
         List<EventShortDto> eventShortDtos = eventFullDtos.stream()
                 .map(eventMapper::convertFromFullToShortDto)
                 .collect(Collectors.toList());
@@ -176,7 +220,7 @@ public class EventServiceImpl implements EventService {
         List<Event> events = eventRepository.findAll(builder, PageRequest.of(from / size, size)).stream()
                 .collect(Collectors.toList());
         log.info("Searching events in repository, event={}", events);
-        List<EventFullDto> eventFullDtos = setReviewsAndConfirmedRequests(events, rangeStart, rangeEnd);
+        List<EventFullDto> eventFullDtos = setEventInfo(events, rangeStart, rangeEnd);
         log.info("EventFullDtos prepared for response, EventShortDtos={}", eventFullDtos);
         return eventFullDtos;
     }
@@ -243,6 +287,11 @@ public class EventServiceImpl implements EventService {
         List<ViewStats> viewStats = getStatsViews(null, event, null, null);
         eventFullDto.setViews(setViews(eventFullDto, viewStats));
         eventFullDto.setConfirmedRequests(requestService.countConfirmedRequests(event.getId()));
+        List<CommentDto> comments = commentRepository.findAllByEventId(event.getId(),
+                Sort.by(Sort.Direction.DESC, "created")).stream()
+                .map(commentMapper::convertToDto)
+                .collect(Collectors.toList());
+        eventFullDto.setComments(comments);
         log.info("EventFullDto prepared for response, eventFullDto={}", eventFullDto);
         return eventFullDto;
     }
@@ -274,16 +323,19 @@ public class EventServiceImpl implements EventService {
         return viewStats;
     }
 
-    private List<EventFullDto> setReviewsAndConfirmedRequests(List<Event> events, String rangeStart, String rangeEnd) {
+    private List<EventFullDto> setEventInfo(List<Event> events, String rangeStart, String rangeEnd) {
         List<Long> eventIds = events.stream().map(Event::getId).collect(Collectors.toList());
         List<ViewStats> viewStats = getStatsViews(events, null, rangeStart, rangeEnd);
         List<RequestWithCount> requestWithCounts = requestService.getConfirmedRequestsCount(eventIds);
+        List<Comment> comments = commentRepository.findAllByEventIdIn(eventIds,
+                Sort.by(Sort.Direction.DESC, "created"));
         List<EventFullDto> eventFullDtos = events.stream()
                 .map(eventMapper::convertToFullDto)
                 .collect(Collectors.toList());
         eventFullDtos.forEach(event -> {
             event.setViews(setViews(event, viewStats));
             event.setConfirmedRequests(setConfirmedRequests(event, requestWithCounts));
+            event.setComments(setComments(event, comments));
         });
         return eventFullDtos;
     }
@@ -307,6 +359,17 @@ public class EventServiceImpl implements EventService {
                     .findFirst().orElse(0L);
         } else {
             return 0L;
+        }
+    }
+
+    private List<CommentDto> setComments(EventFullDto eventFullDto, List<Comment> comments) {
+        if (comments != null) {
+            return comments.stream()
+                    .filter(comment -> comment.getEvent().getId() == eventFullDto.getId())
+                    .map(commentMapper::convertToDto)
+                    .collect(Collectors.toList());
+        } else {
+            return null;
         }
     }
 

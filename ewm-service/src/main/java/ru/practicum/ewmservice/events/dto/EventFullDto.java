@@ -9,6 +9,8 @@ import ru.practicum.ewmservice.events.model.EventLocation;
 import ru.practicum.ewmservice.events.model.State;
 import ru.practicum.ewmservice.users.dto.UserShortDto;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -46,6 +48,8 @@ public class EventFullDto {
 
   private State state;
 
+  private List<CommentDto> comments;
+
   @Override
   public String toString() {
     StringBuilder string = new StringBuilder("Event{" +
@@ -65,13 +69,19 @@ public class EventFullDto {
     } else {
       string.append("null");
     }
-    return string.append(", location=" + location +
+    string.append(", location=" + location +
             ", paid=" + paid +
             ", participantLimit=" + participantLimit +
             ", requestModeration=" + requestModeration +
             ", state=" + state +
             ", publishedOn=" + publishedOn +
             ", createdOn=" + createdOn +
-            '}').toString();
+            ", comments=");
+    if (comments != null) {
+      string.append(comments.size());
+    } else {
+      string.append("null");
+    }
+    return string.append("'}'").toString();
   }
 }
