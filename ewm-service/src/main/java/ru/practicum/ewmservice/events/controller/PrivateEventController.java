@@ -5,10 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.ewmservice.events.dto.EventFullDto;
-import ru.practicum.ewmservice.events.dto.EventShortDto;
-import ru.practicum.ewmservice.events.dto.NewEventDto;
-import ru.practicum.ewmservice.events.dto.UpdateEventUserRequest;
+import ru.practicum.ewmservice.events.dto.*;
 import ru.practicum.ewmservice.events.service.EventService;
 import ru.practicum.ewmservice.requests.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewmservice.requests.dto.EventRequestStatusUpdateResult;
@@ -74,5 +71,34 @@ public class PrivateEventController {
         log.info("Updating request status, userId={}, eventId={}, requestStatus={}", userId, eventId,
                 updateRequestStatus);
         return eventService.updateRequestStatus(userId, eventId, updateRequestStatus);
+    }
+
+    /**
+     * Добавление зарегистрированным пользователем комментария к событию
+     */
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/{eventId}/comment")
+    public CommentDto addComment(@PathVariable long userId, @PathVariable long eventId,
+                                 @RequestBody @Valid InputCommentDto commentDto) {
+        log.info("Posting comment by user with id={} to event with id={}, commentDto={}", userId, eventId, commentDto);
+        return eventService.addComment(userId, eventId, commentDto);
+    }
+
+    /**
+     * Изменение комментария в течение суток
+     */
+    @PatchMapping("/{eventId}/comment/{commentId}")
+    public CommentDto updateComment(@PathVariable long userId, @PathVariable long eventId, @PathVariable long commentId,
+                                    @RequestBody @Valid InputCommentDto commentDto) {
+        log.info("Updating comment with id={} by user with id={} to event with id={}, commentDto={}", commentId, userId, eventId, commentDto);
+        return eventService.updateComment(userId, eventId, commentId, commentDto);
+    }
+
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{eventId}/comment/{commentId}")
+    public void deleteComment(@PathVariable long userId, @PathVariable long eventId, @PathVariable long commentId) {
+        log.info("Deleting comment with id={} by user with id={} to event with id={}", commentId, userId, eventId);
+        eventService.deleteComment(userId, eventId, commentId);
     }
 }

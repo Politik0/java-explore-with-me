@@ -1,6 +1,7 @@
 package ru.practicum.ewmservice.events.service;
 
 import ru.practicum.ewmservice.events.dto.*;
+import ru.practicum.ewmservice.events.model.Comment;
 import ru.practicum.ewmservice.events.model.Event;
 import ru.practicum.ewmservice.requests.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewmservice.requests.dto.EventRequestStatusUpdateResult;
@@ -39,4 +40,12 @@ public interface EventService {
                                                        EventRequestStatusUpdateRequest requestStatus);
 
     EventFullDto updateEventByAdmin(long eventId, UpdateEventAdminRequest updateEventAdminRequest);
+
+    CommentDto addComment(long userId, long eventId, InputCommentDto commentDto);
+
+    CommentDto updateComment(long userId, long eventId, long commentId, InputCommentDto commentDto);
+
+    Comment findCommentById(long commentId);
+
+    void deleteComment(long userId, long eventId, long commentId);
 }
